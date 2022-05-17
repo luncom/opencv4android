@@ -25,6 +25,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -269,6 +270,13 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         int height = src.rows();
         int depth = src.depth();
         Log.d(TAG, "channels:" + channels + ",width:" + width + ",height:" + height + ",depth:" + depth);
+
+        MatOfDouble mean = new MatOfDouble();
+        MatOfDouble stdDev = new MatOfDouble();
+
+        Core.meanStdDev(src,mean,stdDev);
+
+        Log.d(TAG,"均值mean:"+mean.toList()+",标准方差stdDev:"+stdDev.toList());
 
         int pv = 0;
         byte[] data = new byte[channels * width * height];
