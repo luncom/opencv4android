@@ -22,10 +22,14 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import kotlin.Triple;
 
@@ -72,6 +76,11 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
 //        binding.HelloOpenCvView.setCvCameraViewListener(this);
         binding.btnSelectImage.setOnClickListener(this);
         binding.btnReadWritePix.setOnClickListener(this);
+        binding.btnSplitChannel.setOnClickListener(this);
+        binding.btnMergeChannel.setOnClickListener(this);
+        binding.btnBgZeroChannel.setOnClickListener(this);
+        binding.btnBrZeroChannel.setOnClickListener(this);
+        binding.btnGrZeroChannel.setOnClickListener(this);
     }
 
 
@@ -104,6 +113,10 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
 //        if (binding.HelloOpenCvView != null) {
 //            binding.HelloOpenCvView.disableView();
 //        }
+        channelB.release();
+        channelG.release();
+        channelR.release();
+        mRgba.release();
     }
 
     @Override
@@ -138,7 +151,24 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
                 Utils.pickUpImage(this);
                 break;
             case R.id.btn_read_write_pix:
-                readAndWritePixelOneByOne();
+//                readAndWritePixelOneByOne();
+//                readAndWritePixelOneRowByOneRow();
+                readAndWritePixelAll();
+                break;
+            case R.id.btn_split_channel:
+                splitChannel();
+                break;
+            case R.id.btn_merge_channel:
+                mergeChannel();
+                break;
+            case R.id.btn_bgZero_channel:
+                showBGZero();
+                break;
+            case R.id.btn_brZero_channel:
+                showBRZero();
+                break;
+            case R.id.btn_grZero_channel:
+                showGRZero();
                 break;
         }
     }
@@ -158,6 +188,10 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
     }
 
 
+    /**
+     * 一个一个像素读取,适用于随机少量像素读写
+     * 频繁访问jni，效率低,内存需求小
+     */
     private void readAndWritePixelOneByOne() {
         Mat src = Imgcodecs.imread(fileUri.getPath());
         int channels = src.channels();
@@ -195,6 +229,156 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.ivTarget.setImageBitmap(target);
     }
 
+    /**
+     * 逐行读取像素
+     */
+    private void readAndWritePixelOneRowByOneRow() {
+        Mat src = Imgcodecs.imread(fileUri.getPath());
+        int channels = src.channels();
+        int width = src.cols();
+        int height = src.rows();
+        int depth = src.depth();
+        Log.d(TAG, "channels:" + channels + ",width:" + width + ",height:" + height + ",depth:" + depth);
+        byte[] data = new byte[channels * width];
+        int b = 0, g = 0, r = 0;
+        int pv = 0;
+        for (int row = 0; row < height; row++) {
+            src.get(row, 0, data);
+            for (int col = 0; col < data.length; col++) {
+                pv = data[col] & 0xff;
+                pv = 255 - pv;
+                data[col] = (byte) pv;
+            }
+            src.put(row, 0, data);
+        }
+
+        Bitmap target = Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888);
+        Mat dst = new Mat();
+        Imgproc.cvtColor(src, dst, Imgproc.COLOR_BGR2BGRA);
+        org.opencv.android.Utils.matToBitmap(dst, target);
+        binding.ivTarget.setImageBitmap(target);
+    }
+
+    /**
+     * 一次读取，效率最快，但是内存消耗高，容易oom
+     */
+    private void readAndWritePixelAll() {
+        Mat src = Imgcodecs.imread(fileUri.getPath());
+        int channels = src.channels();
+        int width = src.cols();
+        int height = src.rows();
+        int depth = src.depth();
+        Log.d(TAG, "channels:" + channels + ",width:" + width + ",height:" + height + ",depth:" + depth);
+
+        int pv = 0;
+        byte[] data = new byte[channels * width * height];
+        src.get(0, 0, data);
+        for (int i = 0; i < data.length; i++) {
+            pv = data[i] & 0xff;
+            pv = 255 - pv;
+            data[i] = (byte) pv;
+        }
+        src.put(0, 0, data);
+
+
+        Bitmap target = Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888);
+        Mat dst = new Mat();
+        Imgproc.cvtColor(src, dst, Imgproc.COLOR_BGR2BGRA);
+        org.opencv.android.Utils.matToBitmap(dst, target);
+        binding.ivTarget.setImageBitmap(target);
+
+    }
+
+    /**
+     * 通道分离
+     */
+    private Mat channelB;
+    private Mat channelG;
+    private Mat channelR;
+
+    private void splitChannel() {
+        channelB = new Mat();
+        channelG = new Mat();
+        channelR = new Mat();
+        Mat src = Imgcodecs.imread(fileUri.getPath());
+        if (src.empty()) return;
+        List<Mat> mv = new ArrayList<>();
+        Core.split(src, mv);
+        channelB = mv.get(0);
+        channelG = mv.get(1);
+        channelR = mv.get(2);
+
+        binding.ivTarget.setImageBitmap(formatMat2Bitmap(channelB));
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(channelG));
+        binding.ivTarget3.setImageBitmap(formatMat2Bitmap(channelR));
+
+    }
+
+    /**
+     * 合并通道
+     */
+    private void mergeChannel() {
+        Mat dst = new Mat();
+        List<Mat> mv = new ArrayList<>();
+        mv.add(channelB);
+        mv.add(channelG);
+        mv.add(channelR);
+        Core.merge(mv, dst);
+        binding.ivSrc.setImageBitmap(formatMat2Bitmap(dst));
+    }
+
+    private void showBGZero() {
+        Mat src = Imgcodecs.imread(fileUri.getPath());
+        Mat zero = Mat.zeros(src.rows(), src.cols(), CvType.CV_8UC1);
+        List<Mat> list = new ArrayList<>();
+        list.add(zero);
+        list.add(zero);
+        list.add(channelR);
+        Mat dst = new Mat();
+        Core.merge(list, dst);
+        binding.ivTarget3.setImageBitmap(formatMat2Bitmap(dst));
+        src.release();
+        zero.release();
+        dst.release();
+    }
+
+    private void showBRZero() {
+        Mat src = Imgcodecs.imread(fileUri.getPath());
+        Mat zero = Mat.zeros(src.rows(), src.cols(), CvType.CV_8UC1);
+        List<Mat> list = new ArrayList<>();
+        list.add(zero);
+        list.add(channelG);
+        list.add(zero);
+        Mat dst = new Mat();
+        Core.merge(list, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+        src.release();
+        zero.release();
+        dst.release();
+    }
+
+    private void showGRZero() {
+        Mat src = Imgcodecs.imread(fileUri.getPath());
+        Mat zero = Mat.zeros(src.rows(), src.cols(), CvType.CV_8UC1);
+        List<Mat> list = new ArrayList<>();
+        list.add(channelB);
+        list.add(zero);
+        list.add(zero);
+        Mat dst = new Mat();
+        Core.merge(list, dst);
+        binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
+        src.release();
+        zero.release();
+        dst.release();
+    }
+
+
+    private Bitmap formatMat2Bitmap(Mat mat) {
+        Bitmap target = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+        org.opencv.android.Utils.matToBitmap(mat, target);
+        return target;
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -203,4 +387,6 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         if (fileUri != null)
             binding.ivSrc.setImageBitmap(BitmapFactory.decodeFile(fileUri.getPath()));
     }
+
+
 }
