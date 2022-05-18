@@ -16,6 +16,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+
             <Button
                 android:id="@+id/btn_select_image"
                 android:layout_width="wrap_content"
@@ -39,6 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="合并通道" />
+
             <Button
                 android:id="@+id/btn_grZero_channel"
                 android:layout_width="wrap_content"
@@ -58,6 +60,96 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="b,g = zero" />
+
+            <Button
+                android:id="@+id/btn_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="加" />
+
+            <Button
+                android:id="@+id/btn_subtract"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="减" />
+
+            <Button
+                android:id="@+id/btn_multiply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="乘" />
+
+            <Button
+                android:id="@+id/btn_devide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="除" />
+
+            <Button
+                android:id="@+id/btn_add_weight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="加weight"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_bitwise_and"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="bitWiseAnd"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_bitwise_not"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="bitWiseNot"
+                android:textAllCaps="false" />
+
+
+            <Button
+                android:id="@+id/btn_bitwise_xor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="bitWiseXor"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_bitwise_or"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="bitWiseOr"
+                android:textAllCaps="false" />
+
+            <TextView
+                android:id="@+id/btn_brightness"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="亮度"
+                android:textAllCaps="false" />
+
+            <SeekBar
+                android:id="@+id/sb_bright"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:max="255"
+                android:min="0"
+                android:progress="0" />
+
+            <TextView
+                android:id="@+id/btn_contrast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="对比度"
+                android:textAllCaps="false" />
+
+            <SeekBar
+                android:id="@+id/sb_contrast"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:max="300"
+                android:min="0"
+                android:progress="100" />
 
 
             <Button
@@ -85,22 +177,19 @@
             android:id="@+id/iv_target"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:layout_marginTop="20dp"
-            tools:src="@mipmap/lena" />
+            android:layout_marginTop="20dp" />
 
         <ImageView
             android:id="@+id/iv_target2"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:layout_marginTop="20dp"
-            tools:src="@mipmap/lena" />
+            android:layout_marginTop="20dp" />
 
         <ImageView
             android:id="@+id/iv_target3"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:layout_marginTop="20dp"
-            tools:src="@mipmap/lena" />
+            android:layout_marginTop="20dp" />
 
     </LinearLayout>
 </LinearLayout>

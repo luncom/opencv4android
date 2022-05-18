@@ -5,10 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Pair;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.SeekBar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,9 +29,11 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +45,7 @@ import kotlin.Triple;
  * Created by jiangdongguo on 2017/12/29.
  */
 
-public class ImgProcessActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, View.OnClickListener {
+public class ImgProcessActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final String TAG = "ImgProcessActivity";
     private ActivityHelloBinding binding;
     private Mat mRgba;
@@ -58,6 +63,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
                 case LoaderCallbackInterface.SUCCESS:
                     Log.i(TAG, "OpenCV loaded successfully.");
 //                    binding.HelloOpenCvView.enableView();
+                    initBrightnessAndContrast();
                     break;
                 default:
                     super.onManagerConnected(status);
@@ -82,6 +88,17 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.btnBgZeroChannel.setOnClickListener(this);
         binding.btnBrZeroChannel.setOnClickListener(this);
         binding.btnGrZeroChannel.setOnClickListener(this);
+        binding.btnAdd.setOnClickListener(this);
+        binding.btnSubtract.setOnClickListener(this);
+        binding.btnMultiply.setOnClickListener(this);
+        binding.btnDevide.setOnClickListener(this);
+        binding.btnAddWeight.setOnClickListener(this);
+        binding.btnBitwiseAnd.setOnClickListener(this);
+        binding.btnBitwiseNot.setOnClickListener(this);
+        binding.btnBitwiseXor.setOnClickListener(this);
+        binding.btnBitwiseOr.setOnClickListener(this);
+        binding.sbBright.setOnSeekBarChangeListener(this);
+        binding.sbContrast.setOnSeekBarChangeListener(this);
     }
 
 
@@ -171,7 +188,199 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             case R.id.btn_grZero_channel:
                 showGRZero();
                 break;
+            case R.id.btn_add:
+                add(commonCalculate());
+                break;
+            case R.id.btn_subtract:
+                subtract(commonCalculate());
+                break;
+            case R.id.btn_multiply:
+                multiply(commonCalculate());
+                break;
+            case R.id.btn_devide:
+                devide(commonCalculate());
+                break;
+            case R.id.btn_add_weight:
+                addWeight(commonCalculate());
+                break;
+            case R.id.btn_bitwise_and:
+                bitWiseAnd(commonCalculate());
+                break;
+            case R.id.btn_bitwise_not:
+                bitWiseNot(commonCalculate());
+                break;
+            case R.id.btn_bitwise_xor:
+                bitWiseXor(commonCalculate());
+                break;
+            case R.id.btn_bitwise_or:
+                bitWiseOr(commonCalculate());
+                break;
+
         }
+    }
+
+    private void adjustBrightnessAndContrast() {
+        Mat pre = new Mat();
+        Mat source = brightnessAndContrastPair.second;
+        Core.add(source,
+                new Scalar(brightness - originBrightness, brightness - originBrightness, brightness - originBrightness),
+                pre);
+        Mat dst = new Mat();
+        Core.multiply(pre, new Scalar(contrast / 100, contrast / 100, contrast / 100, contrast / 100), dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+        pre.release();
+        dst.release();
+    }
+
+
+    private Pair<Mat, Mat> commonCalculate() {
+        binding.ivSrc.setImageResource(R.mipmap.lena);
+        Mat bgr = null;
+        try {
+            bgr = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Mat source = new Mat();
+        Imgproc.cvtColor(bgr, source, Imgproc.COLOR_BGR2RGB);
+        Bitmap bitmap = Bitmap.createBitmap(source.width(), source.height(), Bitmap.Config.ARGB_8888);
+        bitmap.setDensity(DisplayMetrics.DENSITY_XXHIGH);
+        org.opencv.android.Utils.matToBitmap(bgr, bitmap);
+        binding.ivTarget.setImageBitmap(bitmap);
+        return new Pair<>(bgr, source);
+    }
+
+    private Pair<Mat, Mat> initBrightnessAndContrast() {
+        binding.ivSrc.setImageResource(R.mipmap.lena);
+        Mat bgr = null;
+        try {
+            bgr = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Mat source = new Mat();
+        Imgproc.cvtColor(bgr, source, Imgproc.COLOR_BGR2RGB);
+        Bitmap bitmap = Bitmap.createBitmap(source.width(), source.height(), Bitmap.Config.ARGB_8888);
+        org.opencv.android.Utils.matToBitmap(source, bitmap);
+        binding.ivTarget.setImageBitmap(bitmap);
+        originBrightness = Core.mean(source).val[0];
+        Log.d(TAG, "originBrightness:" + originBrightness + ",sbBright:" + (binding.sbBright == null));
+        brightnessAndContrastPair = new Pair<>(bgr,source);
+        binding.sbBright.setProgress((int) originBrightness);
+        binding.sbContrast.setProgress(100);
+        return new Pair<>(bgr, source);
+    }
+
+
+    private void bitWiseAnd(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.bitwise_and(bgr, source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    private void bitWiseNot(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.bitwise_not(source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    private void bitWiseXor(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.bitwise_xor(bgr, source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    private void bitWiseOr(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.bitwise_or(bgr, source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    private void add(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.add(bgr, source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+//            bitmap.recycle();
+
+    }
+
+    private void subtract(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.subtract(bgr, source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    private void multiply(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.multiply(bgr, source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    private void devide(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.divide(bgr, source, dst, 50f, -1);
+        Core.convertScaleAbs(dst, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    private void addWeight(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.addWeighted(bgr, 0.2, source, 0.8, 100, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
     }
 
     /**
@@ -274,9 +483,9 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         MatOfDouble mean = new MatOfDouble();
         MatOfDouble stdDev = new MatOfDouble();
 
-        Core.meanStdDev(src,mean,stdDev);
+        Core.meanStdDev(src, mean, stdDev);
 
-        Log.d(TAG,"均值mean:"+mean.toList()+",标准方差stdDev:"+stdDev.toList());
+        Log.d(TAG, "均值mean:" + mean.toList() + ",标准方差stdDev:" + stdDev.toList());
 
         int pv = 0;
         byte[] data = new byte[channels * width * height];
@@ -396,5 +605,30 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             binding.ivSrc.setImageBitmap(BitmapFactory.decodeFile(fileUri.getPath()));
     }
 
+    private boolean initBrightAndContrast = false;
+    private double brightness = 0, contrast = 100;
+    private double originBrightness;
+    private Pair<Mat, Mat> brightnessAndContrastPair;
 
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+        if (seekBar.getId() == R.id.sb_bright) {
+            brightness = i;
+            adjustBrightnessAndContrast();
+        } else if (seekBar.getId() == R.id.sb_contrast) {
+            contrast = i;
+            adjustBrightnessAndContrast();
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
 }
