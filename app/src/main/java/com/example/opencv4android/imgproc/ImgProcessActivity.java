@@ -36,6 +36,7 @@ import org.opencv.imgproc.Imgproc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import kotlin.Triple;
 
@@ -99,6 +100,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.btnBitwiseOr.setOnClickListener(this);
         binding.sbBright.setOnSeekBarChangeListener(this);
         binding.sbContrast.setOnSeekBarChangeListener(this);
+        binding.btnNormalize.setOnClickListener(this);
     }
 
 
@@ -215,10 +217,39 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             case R.id.btn_bitwise_or:
                 bitWiseOr(commonCalculate());
                 break;
+            case R.id.btn_normalize:
+                normalize();
+                break;
 
         }
     }
 
+    // Core.convertScaleAbs(dst, dst);线性绝对值放缩变换，把任意像素值变化到0~255的CV_8U图像像素值
+    // Core.normalize();归一化，把数据re-scale到制定的范围内
+
+    /**
+     * 归一化
+     */
+    private void normalize() {
+        Mat src = Mat.zeros(400, 400, CvType.CV_32FC3);
+        float[] data = new float[400 * 400 * 3];
+        Random random = new Random();
+        for (int i = 0; i < data.length; i++) {
+            data[i]= (float) random.nextGaussian();
+        }
+        src.put(0,0,data);
+
+        Mat dst = new Mat();
+        Core.normalize(src,dst,0,255,Core.NORM_MINMAX,-1);
+        Mat dst8u = new Mat();
+        dst.convertTo(dst8u,CvType.CV_8UC3);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst8u));
+    }
+
+    /**
+     * 1.调整亮度：加减法，亮度值0-255，new Scalar(b,b,b),b>0 调高亮度，b<0 调低亮度
+     * 2.调整对比度：乘除法，new Scalar(b,b,b),b>1 调高对比度，b<1 调低对比度，b的取值（0~3）
+     */
     private void adjustBrightnessAndContrast() {
         Mat pre = new Mat();
         Mat source = brightnessAndContrastPair.second;
@@ -265,25 +296,18 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.ivTarget.setImageBitmap(bitmap);
         originBrightness = Core.mean(source).val[0];
         Log.d(TAG, "originBrightness:" + originBrightness + ",sbBright:" + (binding.sbBright == null));
-        brightnessAndContrastPair = new Pair<>(bgr,source);
+        brightnessAndContrastPair = new Pair<>(bgr, source);
         binding.sbBright.setProgress((int) originBrightness);
         binding.sbContrast.setProgress(100);
         return new Pair<>(bgr, source);
     }
 
 
-    private void bitWiseAnd(Pair<Mat, Mat> pair) {
-        Mat bgr = pair.first;
-        Mat source = pair.second;
-        Mat dst = new Mat();
-        Core.bitwise_and(bgr, source, dst);
-        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
-
-        dst.release();
-        bgr.release();
-        source.release();
-    }
-
+    /**
+     * 取反操作
+     *
+     * @param pair
+     */
     private void bitWiseNot(Pair<Mat, Mat> pair) {
         Mat bgr = pair.first;
         Mat source = pair.second;
@@ -296,6 +320,12 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         source.release();
     }
 
+    /**
+     * 异或操作
+     * 对输入图像的叠加取反效果
+     *
+     * @param pair
+     */
     private void bitWiseXor(Pair<Mat, Mat> pair) {
         Mat bgr = pair.first;
         Mat source = pair.second;
@@ -308,6 +338,30 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         source.release();
     }
 
+    /**
+     * 与操作
+     * 对两张图像混合后的输出图像有降低混合图像亮度的效果，会让输出的像素小于等于对应位置的任意一张输入图像的像素值
+     *
+     * @param pair
+     */
+    private void bitWiseAnd(Pair<Mat, Mat> pair) {
+        Mat bgr = pair.first;
+        Mat source = pair.second;
+        Mat dst = new Mat();
+        Core.bitwise_and(bgr, source, dst);
+        binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
+
+        dst.release();
+        bgr.release();
+        source.release();
+    }
+
+    /**
+     * 或操作
+     * 对两张图像混合后的输出图像有强化混合图像亮度的效果，会让输出的像素大于等于对应位置的任意一张输入图像的像素值
+     *
+     * @param pair
+     */
     private void bitWiseOr(Pair<Mat, Mat> pair) {
         Mat bgr = pair.first;
         Mat source = pair.second;
@@ -363,6 +417,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         Mat source = pair.second;
         Mat dst = new Mat();
         Core.divide(bgr, source, dst, 50f, -1);
+        //线性绝对值放缩变换，把任意像素值变化到0~255的CV_8U图像像素值
         Core.convertScaleAbs(dst, dst);
         binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst));
 
@@ -370,6 +425,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         bgr.release();
         source.release();
     }
+
 
     private void addWeight(Pair<Mat, Mat> pair) {
         Mat bgr = pair.first;
@@ -590,6 +646,11 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
     }
 
 
+    /**
+     *
+     * @param mat is a valid input Mat object of the types 'CV_8UC1', 'CV_8UC3' or 'CV_8UC4'.
+     * @return
+     */
     private Bitmap formatMat2Bitmap(Mat mat) {
         Bitmap target = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
         org.opencv.android.Utils.matToBitmap(mat, target);

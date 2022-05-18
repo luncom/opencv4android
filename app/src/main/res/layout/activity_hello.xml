@@ -151,6 +151,12 @@
                 android:min="0"
                 android:progress="100" />
 
+            <Button
+                android:id="@+id/btn_normalize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="归一化" />
+
 
             <Button
                 android:id="@+id/btn_gray"
