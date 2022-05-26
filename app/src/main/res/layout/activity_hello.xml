@@ -157,6 +157,43 @@
                 android:layout_height="wrap_content"
                 android:text="归一化" />
 
+            <Button
+                android:id="@+id/btn_blur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="均值模糊" />
+
+            <Button
+                android:id="@+id/btn_gaussian_blur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="高斯模糊" />
+
+
+            <Button
+                android:id="@+id/btn_median_blur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="中值滤波" />
+
+            <Button
+                android:id="@+id/btn_dilate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="膨胀（最大值滤波）" />
+
+            <Button
+                android:id="@+id/btn_erode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="腐蚀（最小值滤波）" />
+
+            <Button
+                android:id="@+id/btn_bilateralFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="高斯双边滤波" />
+
 
             <Button
                 android:id="@+id/btn_gray"

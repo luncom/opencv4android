@@ -29,12 +29,15 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -101,6 +104,12 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.sbBright.setOnSeekBarChangeListener(this);
         binding.sbContrast.setOnSeekBarChangeListener(this);
         binding.btnNormalize.setOnClickListener(this);
+        binding.btnBlur.setOnClickListener(this);
+        binding.btnGaussianBlur.setOnClickListener(this);
+        binding.btnMedianBlur.setOnClickListener(this);
+        binding.btnDilate.setOnClickListener(this);
+        binding.btnErode.setOnClickListener(this);
+        binding.btnBilateralFilter.setOnClickListener(this);
     }
 
 
@@ -220,8 +229,151 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             case R.id.btn_normalize:
                 normalize();
                 break;
+            case R.id.btn_blur:
+                blur();
+                break;
+            case R.id.btn_gaussian_blur:
+                gaussianBlur();
+                break;
+            case R.id.btn_median_blur:
+                medianBlur();
+                break;
+            case R.id.btn_dilate:
+                dilate();
+                break;
+            case R.id.btn_erode:
+                erode();
+                break;
+            case R.id.btn_bilateralFilter:
+                bilateralFilter();
+                break;
 
         }
+    }
+
+    /**
+     * 高斯双边滤波
+     */
+    private void bilateralFilter(){
+
+    }
+
+    /**
+     * 膨胀（最大值滤波）
+     */
+    private void dilate() {
+        try {
+            Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
+
+            Mat dst = new Mat();
+            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+            Imgproc.dilate(src, dst, kernel);
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 腐蚀（最小值滤波）
+     */
+    private void erode() {
+        try {
+            Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
+
+            Mat dst = new Mat();
+            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+            Imgproc.erode(src, dst, kernel);
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 中值滤波
+     */
+    private void medianBlur() {
+        Mat src = null;
+        try {
+            src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
+
+            Mat result = new Mat();
+            Imgproc.medianBlur(src, result, 5);
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(result));
+
+            src.release();
+//            mRgb.release();
+            result.release();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 高斯模糊
+     */
+    private void gaussianBlur() {
+        Mat src = null;
+        try {
+            src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            Mat result = new Mat();
+            Imgproc.GaussianBlur(mRgb, result, new Size(9, 9), 10, 20);
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(result));
+
+            src.release();
+            mRgb.release();
+            result.release();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * 均值滤波
+     */
+    private void blur() {
+        try {
+            Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat dst = new Mat();
+            Imgproc.blur(src, dst, new Size(12, 12));
+            Mat result = new Mat();
+            Imgproc.cvtColor(dst, result, Imgproc.COLOR_BGR2RGB);
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(result));
+            src.release();
+            dst.release();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     // Core.convertScaleAbs(dst, dst);线性绝对值放缩变换，把任意像素值变化到0~255的CV_8U图像像素值
@@ -235,14 +387,14 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         float[] data = new float[400 * 400 * 3];
         Random random = new Random();
         for (int i = 0; i < data.length; i++) {
-            data[i]= (float) random.nextGaussian();
+            data[i] = (float) random.nextGaussian();
         }
-        src.put(0,0,data);
+        src.put(0, 0, data);
 
         Mat dst = new Mat();
-        Core.normalize(src,dst,0,255,Core.NORM_MINMAX,-1);
+        Core.normalize(src, dst, 0, 255, Core.NORM_MINMAX, -1);
         Mat dst8u = new Mat();
-        dst.convertTo(dst8u,CvType.CV_8UC3);
+        dst.convertTo(dst8u, CvType.CV_8UC3);
         binding.ivTarget2.setImageBitmap(formatMat2Bitmap(dst8u));
     }
 
@@ -647,7 +799,6 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
 
 
     /**
-     *
      * @param mat is a valid input Mat object of the types 'CV_8UC1', 'CV_8UC3' or 'CV_8UC4'.
      * @return
      */
