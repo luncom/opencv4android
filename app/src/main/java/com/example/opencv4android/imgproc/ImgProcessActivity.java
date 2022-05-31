@@ -1,9 +1,12 @@
 package com.example.opencv4android.imgproc;
 
+import static org.opencv.imgproc.Imgproc.MORPH_RECT;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -110,6 +113,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.btnDilate.setOnClickListener(this);
         binding.btnErode.setOnClickListener(this);
         binding.btnBilateralFilter.setOnClickListener(this);
+        binding.btnMeanShiftFilter.setOnClickListener(this);
     }
 
 
@@ -247,15 +251,69 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             case R.id.btn_bilateralFilter:
                 bilateralFilter();
                 break;
+            case R.id.btn_meanShiftFilter:
+                meanShiftFilter();
+                break;
 
+        }
+    }
+
+
+
+    /**
+     * 均值漂移滤波
+     */
+    private void meanShiftFilter(){
+        try {
+
+            Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
+
+            Mat dst = new Mat();
+
+            Imgproc.pyrMeanShiftFiltering(mRgb, dst, 40.0,40.0);
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
+
+
+            src.release();
+            mRgb.release();
+            dst.release();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     /**
      * 高斯双边滤波
      */
-    private void bilateralFilter(){
+    private void bilateralFilter() {
+        try {
+            Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
 
+            Mat dst = new Mat();
+//            Imgproc.bilateralFilter(src, dst, 9, 10, 10);
+//            Imgproc.bilateralFilter(src, dst, 25, 10, 10);
+//            Imgproc.bilateralFilter(src, dst, 25, 100, 100);
+            Imgproc.bilateralFilter(mRgb, dst, 25, 200, 200);
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
+
+            src.release();
+            mRgb.release();
+            dst.release();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -272,7 +330,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
 
             Mat dst = new Mat();
-            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+            Mat kernel = Imgproc.getStructuringElement(MORPH_RECT, new Size(3, 3));
             Imgproc.dilate(src, dst, kernel);
             binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
         } catch (IOException e) {
@@ -294,7 +352,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
 
             Mat dst = new Mat();
-            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+            Mat kernel = Imgproc.getStructuringElement(MORPH_RECT, new Size(3, 3));
             Imgproc.erode(src, dst, kernel);
             binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
         } catch (IOException e) {
