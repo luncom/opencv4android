@@ -114,6 +114,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.btnErode.setOnClickListener(this);
         binding.btnBilateralFilter.setOnClickListener(this);
         binding.btnMeanShiftFilter.setOnClickListener(this);
+        binding.btnCustomFilter.setOnClickListener(this);
     }
 
 
@@ -254,16 +255,16 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             case R.id.btn_meanShiftFilter:
                 meanShiftFilter();
                 break;
-
+            case R.id.btn_customFilter:
+                customFilter();
+                break;
         }
     }
 
-
-
     /**
-     * 均值漂移滤波
+     * 自定义滤波
      */
-    private void meanShiftFilter(){
+    private void customFilter() {
         try {
 
             Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
@@ -276,7 +277,72 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
 
             Mat dst = new Mat();
 
-            Imgproc.pyrMeanShiftFiltering(mRgb, dst, 40.0,40.0);
+            Mat k = new Mat(3, 3, CvType.CV_32FC1);
+            //均值模糊
+//            float[] data = new float[]{
+//                    1f / 9f, 1f / 9f, 1f / 9f,
+//                    1f / 9f, 1f / 9f, 1f / 9f,
+//                    1f / 9f, 1f / 9f, 1f / 9f
+//            };
+            //近似高斯模糊
+//        float[] data = new float[]{
+//                0, 1f / 8f, 0,
+//                1f / 8f, 1f / 2f, 1f / 8f,
+//                0, 1f / 8f, 0
+//        };
+            //锐化算子
+            float[] data = new float[]{
+                    0, -1, 0,
+                    -1, 5, -1,
+                    0, -1, 0
+            };
+            k.put(0, 0, data);
+            Imgproc.filter2D(mRgb, dst, -1, k);
+
+//            //梯度
+//            Mat kx = new Mat(3, 3, CvType.CV_32FC1);
+//            Mat ky = new Mat(3, 3, CvType.CV_32FC1);
+//            //X方向梯度算子
+//            float[] robert_x = new float[]{-1, 0, 0, 1};
+//            kx.put(0, 0, robert_x);
+//            //Y方向算子
+//            float[] robert_y = new float[]{0, 1, -1, 0};
+//            ky.put(0, 0, robert_y);
+//
+//            Imgproc.filter2D(mRgb,dst,-1,kx);
+//            Imgproc.filter2D(mRgb,dst,-1,ky);
+
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
+
+
+            src.release();
+            mRgb.release();
+            dst.release();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    /**
+     * 均值漂移滤波
+     */
+    private void meanShiftFilter() {
+        try {
+
+            Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
+
+            Mat dst = new Mat();
+
+            Imgproc.pyrMeanShiftFiltering(mRgb, dst, 40.0, 40.0);
             binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
 
 
