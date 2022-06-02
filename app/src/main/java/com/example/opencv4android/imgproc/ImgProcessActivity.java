@@ -115,6 +115,7 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
         binding.btnBilateralFilter.setOnClickListener(this);
         binding.btnMeanShiftFilter.setOnClickListener(this);
         binding.btnCustomFilter.setOnClickListener(this);
+        binding.btnMorphology.setOnClickListener(this);
     }
 
 
@@ -258,6 +259,52 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             case R.id.btn_customFilter:
                 customFilter();
                 break;
+            case R.id.btn_morphology:
+                morphology();
+                break;
+        }
+    }
+
+    /**
+     * 形态学操作
+     */
+    private void morphology() {
+        try {
+
+            Mat src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat mRgb = new Mat();
+            Imgproc.cvtColor(src, mRgb, Imgproc.COLOR_BGR2RGB);
+            binding.ivSrc.setImageBitmap(formatMat2Bitmap(mRgb));
+
+            Mat dst = new Mat();
+            Mat k = Imgproc.getStructuringElement(MORPH_RECT, new Size(15, 15), new Point(-1, -1));
+
+            //膨胀
+//            Imgproc.morphologyEx(mRgb, dst, Imgproc.MORPH_DILATE, k);
+            //腐蚀
+//            Imgproc.morphologyEx(mRgb, dst, Imgproc.MORPH_ERODE, k);
+//            //开操作
+//            Imgproc.morphologyEx(mRgb, dst, Imgproc.MORPH_OPEN, k);
+//            //闭操作
+//            Imgproc.morphologyEx(mRgb, dst, Imgproc.MORPH_CLOSE, k);
+//            //黑帽
+//            Imgproc.morphologyEx(mRgb, dst, Imgproc.MORPH_BLACKHAT, k);
+//            //顶帽
+//            Imgproc.morphologyEx(mRgb, dst, Imgproc.MORPH_TOPHAT, k);
+//            //梯度
+//            Imgproc.morphologyEx(mRgb, dst, Imgproc.MORPH_GRADIENT, k);
+
+            binding.ivTarget.setImageBitmap(formatMat2Bitmap(dst));
+
+            k.release();
+            src.release();
+            mRgb.release();
+            dst.release();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
