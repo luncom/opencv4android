@@ -21,4 +21,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="人脸检测" />
+
+    <Button
+        android:id="@+id/btn_basic_detect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="基本特征检测" />
 </LinearLayout>

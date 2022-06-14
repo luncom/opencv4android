@@ -262,7 +262,34 @@ public class ImgProcessActivity extends AppCompatActivity implements CameraBridg
             case R.id.btn_morphology:
                 morphology();
                 break;
+            case R.id.btn_threshold:
+                thresHold();
+                break;
         }
+    }
+
+    /**
+     * 阈值操作
+     */
+    private void thresHold(){
+        int t =127;
+        int maxValue=255;
+        Mat src = null;
+        try {
+            src = org.opencv.android.Utils.loadResource(this, R.mipmap.lena);
+            if (src.empty()) {
+                return;
+            }
+            Mat gray = new Mat();
+            Mat dst = new Mat();
+            Imgproc.cvtColor(src,gray,Imgproc.COLOR_BGR2GRAY);
+            Imgproc.threshold(gray,dst,t,maxValue,Imgproc.THRESH_BINARY|Imgproc.THRESH_OTSU);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**

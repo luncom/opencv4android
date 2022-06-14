@@ -4,6 +4,8 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/workplace/opencv4android/app/src/main/res/layout/activity_hello.xml" value="0.29765013054830286" />
+        <entry key="..\:/workplace/opencv4android/app/src/main/res/layout/activity_image_analysis.xml" value="0.25" />
+        <entry key="..\:/workplace/opencv4android/app/src/main/res/layout/activity_main.xml" value="0.20364583333333333" />
         <entry key="..\:/workplace/opencv4android/app/src/main/res/layout/activity_smooth.xml" value="0.17617753623188406" />
       </map>
     </option>

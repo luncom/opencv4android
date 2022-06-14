@@ -10,6 +10,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.opencv4android.chapter.ImageAnalysisActivity;
 import com.example.opencv4android.databinding.ActivityMainBinding;
 import com.example.opencv4android.imgproc.ImgProcessActivity;
 import com.example.opencv4android.objdetect.FaceDetectActivity;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(binding.getRoot());
         binding.btnHello.setOnClickListener(this);
         binding.btnFaceDetect.setOnClickListener(this);
+        binding.btnBasicDetect.setOnClickListener(this);
         initPermission();
     }
 
@@ -63,6 +65,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_faceDetect:
                 Intent intentFd = new Intent(MainActivity.this, FaceDetectActivity.class);
                 startActivity(intentFd);
+                break;
+            case R.id.btn_basic_detect:
+                Intent intentImage = new Intent(MainActivity.this, ImageAnalysisActivity.class);
+                startActivity(intentImage);
                 break;
         }
     }

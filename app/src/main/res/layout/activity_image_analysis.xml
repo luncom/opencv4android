@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_measure_operations"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/select_image_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="选择图像..." />
+
+    <Button
+        android:id="@+id/btn_sobel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/select_image_btn"
+        android:text="Sobel" />
+
+    <Button
+        android:id="@+id/btn_scharr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_sobel"
+        android:text="scharr" />
+
+    <Button
+        android:id="@+id/btn_laplacian"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_scharr"
+        android:text="拉普拉斯算子" />
+
+    <Button
+        android:id="@+id/btn_canny"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_laplacian"
+        android:text="canny边缘检测" />
+
+    <Button
+        android:id="@+id/btn_houghline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_canny"
+        android:text="霍夫直线检测" />
+
+    <Button
+        android:id="@+id/btn_houghlines"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_houghline"
+        android:text="霍夫多直线检测" />
+
+    <Button
+        android:id="@+id/btn_houghcircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_houghlines"
+        android:text="霍夫圆检测" />
+
+    <Button
+        android:id="@+id/btn_findcontours"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_houghcircle"
+        android:text="轮廓发现" />
+
+
+    <Button
+        android:id="@+id/btn_contourArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_findcontours"
+        android:text="轮廓分析" />
+
+    <Button
+        android:id="@+id/btn_hist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_contourArea"
+        android:text="直方图" />
+
+    <Button
+        android:id="@+id/btn_equalizehist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_hist"
+        android:text="直方图均衡化" />
+
+    <Button
+        android:id="@+id/btn_comparehist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_equalizehist"
+        android:text="直方图比较" />
+
+    <Button
+        android:id="@+id/btn_backhist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_comparehist"
+        android:text="直方图反向投影" />
+
+    <Button
+        android:id="@+id/btn_demohist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_backhist"
+        android:text="模板匹配" />
+
+
+    <ImageView
+        android:id="@+id/chapter5_imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/select_image_btn"
+        android:layout_centerInParent="true"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/ic_launcher" />
+</RelativeLayout>

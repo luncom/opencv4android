@@ -52,5 +52,7 @@
             android:name=".objdetect.FaceDetectActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="landscape" />
+
+        <activity android:name=".chapter.ImageAnalysisActivity"/>
     </application>
 </manifest>
